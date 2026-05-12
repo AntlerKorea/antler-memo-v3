@@ -40,6 +40,7 @@ import json
 import os
 import re
 import sys
+from modules.facts import build_team_facts, format_facts_for_prompt
 from pathlib import Path
 
 
@@ -521,45 +522,45 @@ def generate_memo_content(
     system_prompt = build_system_prompt(rules_path, examples, language=language)
 
     # Step 4: User prompt — 추출된 팀 데이터
+    # === 80/20 OPTIMIZATION: Raw JSON 덤프 대신 deterministic facts 사용 ===
+    # Python으로 미리 깔끔하게 추출한 팩트를 LLM에게 제공
+    # → 디테일 누락 방지, Bootcamp 시그널 정확 인식
+    team_facts = build_team_facts(team_data)
+    facts_text = format_facts_for_prompt(team_facts)
+
     user_prompt = f"""Generate the Investment Memo content for team **{team_name}**.
 
 # TEAM SIZE: {team_size} member(s)
-- Generate FOUNDER_1_HEADING, BG_1, BG_2, BG_3 fields for ALL {team_size} founder(s).
-- For founders beyond {team_size} (i.e., FOUNDER_{team_size + 1}_*, FOUNDER_{team_size + 2}_*), set those fields to empty strings ("").
-- Example: If team_size=2, generate FOUNDER_1_* and FOUNDER_2_* with full content; FOUNDER_3_* must all be "".
+- Generate FOUNDER_1~{team_size} fields with full content.
+- For unused founder slots beyond {team_size}, set ALL fields to empty strings ("").
 
-# CRITICAL: FOUNDER TEXT LENGTH (STRICT — text will overflow if violated)
+# CRITICAL: FOUNDER TEXT LENGTH (STRICT)
 - FOUNDER_N_HEADING: max 25 chars (e.g., "Daniel Kim (CEO)")
-- FOUNDER_N_BG_1: max 50 chars (one short bullet)
-- FOUNDER_N_BG_2: max 50 chars (one short bullet)
-- FOUNDER_N_BG_3: max 50 chars (one short bullet)
-- DO NOT EXCEED these limits. Be concise.
+- FOUNDER_N_BG_1/BG_2/BG_3: max 50 chars each (one short bullet)
 - Each bullet = ONE statement. No multi-clause sentences.
-- Example good: "8yr backend; ex-Capital One"
-- Example bad (too long): "Decade-long web novel reader; met fiancée on Genesis Studio platform — genuine domain passion"
 
-# TEAM DATA (extracted from Antler CSVs)
+# CRITICAL: USE THE FACTS BELOW
 
-## DD Survey (most recent)
-{json.dumps(team_data["dd_survey"], ensure_ascii=False, indent=2)[:8000]}
+The facts below are pre-extracted from Antler CSVs by deterministic Python code.
+- Use ALL founder background details (preserve specifics like company names, certifications, years)
+- Bootcamp progression: faithfully describe each session's signal/score/feedback
+- If "married couple: YES" or "preformed: YES", emphasize in narrative
+- DO NOT invent numbers; use only what's in facts
 
-## Founders
-{json.dumps(team_data["founders"], ensure_ascii=False, indent=2)[:3000]}
+═══════════════════════════════════════════════════════════
+# TEAM FACTS (pre-extracted, ground truth)
+═══════════════════════════════════════════════════════════
 
-## Team Formation History (chronological)
-{json.dumps(team_data["team_formation"], ensure_ascii=False, indent=2)[:8000]}
+{facts_text}
 
-## Team Changes Detected
-{json.dumps(team_data["team_changes"], ensure_ascii=False, indent=2)}
-
-## Retro Responses Sample
-{json.dumps(team_data["retro_responses"][:5], ensure_ascii=False, indent=2)[:3000]}
+═══════════════════════════════════════════════════════════
 
 # REQUIRED OUTPUT
 
-Use the `submit_memo_content` tool to submit a complete content JSON for all placeholders.
+Use the `submit_memo_content` tool to submit complete content JSON.
 
 Apply ALL structure rules. Match JaeHee/Jiho/Gabriel quality. Critical DD analysis required.
+Slide 7 STAGE descriptions MUST cite Bootcamp signals + partner names from the facts above.
 """
 
     # Step 5: Anthropic API 호출 with tool use
