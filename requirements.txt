@@ -1,0 +1,11 @@
+# Python dependencies for antler-memo-v2
+# Install: pip install -r requirements.txt
+
+# Anthropic Claude API (콘텐츠 자동 생성)
+anthropic>=0.40.0
+
+# Web UI
+streamlit>=1.30.0
+
+# 표준 라이브러리만 사용 (zipfile, csv, json, urllib 등)
+# Native PowerPoint chart 데이터 교체 — matplotlib 불필요
