@@ -207,9 +207,9 @@ PLACEHOLDER_SCHEMA = {
         "SOM_AMOUNT": {"type": "string", "description": "SOM = company-capturable revenue, NOT market pool size"},
         "SOM_DESC": {"type": "string"},
         "SOM_RATIONALE": {"type": "string", "description": "Must include arithmetic: e.g., '500 leads × $1,497 ACV'"},
-        "WHY_KOREA": {"type": "string", "description": "English. ~70 chars (or 'Why Here (USA)' if US-first)"},
-        "WHY_NOW": {"type": "string", "description": "English. Tech + regulatory + market converging"},
-        "WHY_GLOBAL": {"type": "string", "description": "English. Playbook transferability"},
+        "WHY_KOREA": {"type": "string", "description": "STRICT MAX 90 chars. English. ONE concise sentence. Box overflows beyond this length."},
+        "WHY_NOW": {"type": "string", "description": "STRICT MAX 90 chars. English. ONE concise sentence. Box overflows beyond this length."},
+        "WHY_GLOBAL": {"type": "string", "description": "STRICT MAX 90 chars. English. ONE concise sentence. Box overflows beyond this length."},
         # Slide 4 — Competition
         "COMP1_NAME": {"type": "string"},
         "COMP1_COUNTRY": {"type": "string", "description": "Country code or full name"},
@@ -263,18 +263,18 @@ PLACEHOLDER_SCHEMA = {
         "STAGE_6_DESC": {"type": "string", "description": "English. Trackout + IC sponsor"},
         "STAGE_7_DESC": {"type": "string", "description": "English. Post-trackout latest traction"},
         # Slide 8 — Evaluation (1-5 scores)
-        "SCORE_1": {"type": "string", "description": "Team Cohesion: 1-5"},
-        "RATIONALE_1": {"type": "string", "description": "English. ~80 chars with specifics"},
-        "SCORE_2": {"type": "string", "description": "Execution: 1-5"},
-        "RATIONALE_2": {"type": "string"},
-        "SCORE_3": {"type": "string", "description": "Resilience: 1-5"},
-        "RATIONALE_3": {"type": "string"},
-        "SCORE_4": {"type": "string", "description": "Market Understanding: 1-5"},
-        "RATIONALE_4": {"type": "string"},
-        "SCORE_5": {"type": "string", "description": "Technology: 1-5"},
-        "RATIONALE_5": {"type": "string"},
-        "SCORE_6": {"type": "string", "description": "Innovation: 1-5"},
-        "RATIONALE_6": {"type": "string"},
+        "SCORE_1": {"type": "string", "description": "Score for Team Cohesion (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_1": {"type": "string", "description": "Rationale for Team Cohesion score. STRICT: must discuss ONLY Team Cohesion aspects, NOT other categories. Max 130 chars."},
+        "SCORE_2": {"type": "string", "description": "Score for Execution (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_2": {"type": "string", "description": "Rationale for Execution score. STRICT: must discuss ONLY Execution aspects, NOT other categories. Max 130 chars."},
+        "SCORE_3": {"type": "string", "description": "Score for Resilience (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_3": {"type": "string", "description": "Rationale for Resilience score. STRICT: must discuss ONLY Resilience aspects, NOT other categories. Max 130 chars."},
+        "SCORE_4": {"type": "string", "description": "Score for Market Understanding (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_4": {"type": "string", "description": "Rationale for Market Understanding score. STRICT: must discuss ONLY Market Understanding aspects, NOT other categories. Max 130 chars."},
+        "SCORE_5": {"type": "string", "description": "Score for Technology (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_5": {"type": "string", "description": "Rationale for Technology score. STRICT: must discuss ONLY Technology aspects, NOT other categories. Max 130 chars."},
+        "SCORE_6": {"type": "string", "description": "Score for Innovation (1-5 integer). MUST evaluate ONLY this specific dimension."},
+        "RATIONALE_6": {"type": "string", "description": "Rationale for Innovation score. STRICT: must discuss ONLY Innovation aspects, NOT other categories. Max 130 chars."},
         # Slide 9 — Strengths/Improvements
         "STRENGTH_1": {"type": "string", "description": "Title (~25 chars)"},
         "STRENGTH_1_DESC": {"type": "string", "description": "English. ~120 chars with specifics"},
@@ -534,10 +534,24 @@ def generate_memo_content(
 - Generate FOUNDER_1~{team_size} fields with full content.
 - For unused founder slots beyond {team_size}, set ALL fields to empty strings ("").
 
-# CRITICAL: FOUNDER TEXT LENGTH (STRICT)
+# CRITICAL: TEXT LENGTH LIMITS (STRICT — text overflows if exceeded)
 - FOUNDER_N_HEADING: max 25 chars (e.g., "Daniel Kim (CEO)")
-- FOUNDER_N_BG_1/BG_2/BG_3: max 50 chars each (one short bullet)
+- FOUNDER_N_BG_1/BG_2/BG_3: max 50 chars each
+- WHY_KOREA / WHY_NOW / WHY_GLOBAL: max 90 chars EACH (Market Timing & Opportunity box)
+- TAM_RATIONALE / SAM_RATIONALE / SOM_RATIONALE: max 180 chars
+- RATIONALE_1~6 (Slide 8): max 130 chars each
 - Each bullet = ONE statement. No multi-clause sentences.
+
+# CRITICAL: SLIDE 8 SCORE/RATIONALE CATEGORY MAPPING (STRICT)
+The 6 score/rationale pairs MUST evaluate ONLY their assigned category:
+- SCORE_1 + RATIONALE_1 → Team Cohesion (team dynamics, founder fit, role split)
+- SCORE_2 + RATIONALE_2 → Execution (speed, delivery, milestone hitting)
+- SCORE_3 + RATIONALE_3 → Resilience (handling setbacks, pivot capability, persistence)
+- SCORE_4 + RATIONALE_4 → Market Understanding (TAM/SAM/SOM accuracy, customer insight)
+- SCORE_5 + RATIONALE_5 → Technology (technical depth, defensibility, IP)
+- SCORE_6 + RATIONALE_6 → Innovation (novelty, creative approach, unique angle)
+
+DO NOT mix categories. RATIONALE_1 must talk about team cohesion only, not market.
 
 # CRITICAL: USE THE FACTS BELOW
 
